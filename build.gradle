@@ -55,6 +55,7 @@ task runSimJar(type: Jar) {
 }
 
 task runArenaJar(type: Jar) {
+    baseName = 'HearthSimArena'
     manifest {
         attributes 'Implementation-Title': 'HearthSimArena',
                     'Implementation-Version': '0.0',

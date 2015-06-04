@@ -70,9 +70,13 @@ public class HearthSimArena extends HearthSimBase {
         int p1;
 
         synchronized(available) {
+            if (available.size() < 2) {
+                return null;
+            }
             ThreadLocalRandom rng = ThreadLocalRandom.current();
             p0 = available.remove(rng.nextInt(0, available.size()));
             p1 = available.remove(rng.nextInt(0, available.size()));
+
         }
 
         Path path0 = FileSystems.getDefault().getPath(rootPath_.toString(), String.format("%s%d.hsdeck", deckListFilePath_, p0));
@@ -108,11 +112,11 @@ public class HearthSimArena extends HearthSimBase {
             WinLoss record0 = metrics.get(p0);
             WinLoss record1 = metrics.get(p1);
 
-            if (record0.wins < 12 && record0.losses < 3) {
+            if (!record0.isDone()) {
                 available.add(p0);
             }
 
-            if (record1.wins < 12 && record1.losses < 3) {
+            if (!record1.isDone()) {
                 available.add(p1);
             }
 
@@ -157,7 +161,7 @@ public class HearthSimArena extends HearthSimBase {
         BufferedWriter arenaResults =  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(arenaPath.toString()), "utf-8"));
 
         for (int key : metrics.keySet()) {
-            String outStr = String.format("%d,%d,%d", key, metrics.get(key).wins, metrics.get(key).losses);
+            String outStr = String.format("%d,%d,%d\n", key, metrics.get(key).wins, metrics.get(key).losses);
             arenaResults.write(outStr, 0, outStr.length());
         }
 

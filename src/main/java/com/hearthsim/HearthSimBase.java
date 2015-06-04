@@ -169,7 +169,7 @@ public abstract class HearthSimBase {
                     }
                 }
                 synchronized(lockObject) {
-                    log.info("game " + gameId_ + ", player " + res.winnerPlayerIndex_ + " wins");
+                    // log.info("game " + gameId_ + ", player " + res.winnerPlayerIndex_ + " wins");
                     for (HSGameEndEventListener listener : gameEndListeners_) {
                         listener.gameEnded(res);
                     }

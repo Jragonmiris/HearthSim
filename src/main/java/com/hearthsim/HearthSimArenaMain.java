@@ -13,7 +13,7 @@ public class HearthSimArenaMain {
         final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HearthSimMain.class);
 
         if (args.length < 1) {
-            log.error("Usage: java -jar hearthsim.jar setupFilePath");
+            log.error("Usage: java -jar hearthsimarena.jar setupFilePath");
             System.exit(0);
         }
 
