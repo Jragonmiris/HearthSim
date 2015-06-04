@@ -23,6 +23,12 @@ task(runSim, dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+task(runArena, dependsOn: 'classes', type: JavaExec) {
+    main = 'com.hearthsim.HearthSimArenaMain'
+    args = [hsparam]
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 repositories {
     jcenter()
     maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
@@ -46,4 +52,14 @@ task runSimJar(type: Jar) {
 	}
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 	with jar
+}
+
+task runArenaJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'HearthSimArena',
+                    'Implementation-Version': '0.0',
+                    'Main-Class': 'com.hearthsim.HearthSimArenaMain'
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it: zipTree(it) } }
+    with jar
 }

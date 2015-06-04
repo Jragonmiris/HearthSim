@@ -14,7 +14,9 @@ public class ThreadQueue {
     }
 
     public void queue(Runnable r) {
-        queue.addLast(r);
+        synchronized(queue) {
+            queue.addLast(r);
+        }
     }
 
     public void runQueue() throws InterruptedException {

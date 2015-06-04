@@ -21,11 +21,11 @@ import java.util.List;
 
 public abstract class HearthSimBase {
 
-    private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
+    protected final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     int numSims_;
     int numThreads_;
-    private String gameResultFileName_;
+    protected String gameResultFileName_;
     protected Path rootPath_;
 
     protected Path aiParamFilePath0_;
