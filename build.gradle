@@ -25,7 +25,7 @@ task(runSim, dependsOn: 'classes', type: JavaExec) {
 
 task(runArena, dependsOn: 'classes', type: JavaExec) {
     main = 'com.hearthsim.HearthSimArenaMain'
-    args = [hsparam]
+    args = [hsarenaparam]
     classpath = sourceSets.main.runtimeClasspath
 }
 

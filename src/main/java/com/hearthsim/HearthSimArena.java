@@ -30,6 +30,7 @@ public class HearthSimArena extends HearthSimBase {
 
     private String deckListFilePath_;
     private String arenaResultsPath_;
+    private String aiParamFilePath_;
 
     private int numDecks_;
 
@@ -41,10 +42,17 @@ public class HearthSimArena extends HearthSimBase {
     private Integer gameID;
 
     HearthSimArena(Path setupFilePath) throws IOException, HSInvalidParamFileException, HSParamNotFoundException {
-        super(setupFilePath);
+        super();
         ParamFile masterParam = new ParamFile(setupFilePath);
+
+        rootPath_ = setupFilePath.getParent();
+        numThreads_ = masterParam.getInt("num_threads", 1);
+        gameResultFileName_ = masterParam.getString("output_file", "gameres.txt");
+
+
         deckListFilePath_ = masterParam.getString("deckListFilePath");
-        arenaResultsPath_ = masterParam.getString("arenaResultsPath");
+        aiParamFilePath_ = masterParam.getString("aiParamFilePath");
+        arenaResultsPath_ = masterParam.getString("arena_output", "arenares.txt");
 
         numDecks_ = masterParam.getInt("numDecks");
         metrics = new ConcurrentHashMap(numDecks_, 1.5f, 8);
@@ -74,14 +82,17 @@ public class HearthSimArena extends HearthSimBase {
         DeckListFile deckList0 = new DeckListFile(path0);
         DeckListFile deckList1 = new DeckListFile(path1);
 
+        Path aiPath0 = FileSystems.getDefault().getPath(rootPath_.toString(), String.format("%s%d.hsai", aiParamFilePath_, p0));
+        Path aiPath1 = FileSystems.getDefault().getPath(rootPath_.toString(), String.format("%s%d.hsai", aiParamFilePath_, p1));
+
         Hero hero0 = deckList0.getHero();
         Hero hero1 = deckList1.getHero();
 
         Deck deck0 = deckList0.getDeck();
         Deck deck1 = deckList1.getDeck();
 
-        ArtificialPlayer ai0 = new BruteForceSearchAI(this.aiParamFilePath0_);
-        ArtificialPlayer ai1 = new BruteForceSearchAI(this.aiParamFilePath1_);
+        ArtificialPlayer ai0 = new BruteForceSearchAI(aiPath0);
+        ArtificialPlayer ai1 = new BruteForceSearchAI(aiPath1);
 
         GameResult result =  super.runSingleGame(ai0, hero0, deck0, ai1, hero1, deck1, gameId % 2);
 
@@ -105,7 +116,7 @@ public class HearthSimArena extends HearthSimBase {
                 available.add(p1);
             }
 
-            if (available.size() > 2) {
+            if (available.size() >= 2) {
                 synchronized(gameID) {
                     GameThread gThread = new GameThread(gameID, writer);
                     tQueue.queue(gThread);
@@ -136,14 +147,14 @@ public class HearthSimArena extends HearthSimBase {
         long simEndTime = System.currentTimeMillis();
         double  simDeltaTimeSeconds = (simEndTime - simStartTime) / 1000.0;
         String prettyDeltaTimeSeconds = String.format("%.2f", simDeltaTimeSeconds);
-        double secondsPerGame = simDeltaTimeSeconds / numSims_;
+        double secondsPerGame = simDeltaTimeSeconds / gameID;
         String prettySecondsPerGame = String.format("%.2f", secondsPerGame);
 
         log.info("completed simulation of {} games in {} seconds on {} thread(s)", numSims_, prettyDeltaTimeSeconds, numThreads_);
         log.info("average time per game: {} seconds", prettySecondsPerGame);
 
         Path arenaPath = FileSystems.getDefault().getPath(rootPath_.toString(), arenaResultsPath_);
-        BufferedWriter arenaResults =  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath.toString()), "utf-8"));
+        BufferedWriter arenaResults =  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(arenaPath.toString()), "utf-8"));
 
         for (int key : metrics.keySet()) {
             String outStr = String.format("%d,%d,%d", key, metrics.get(key).wins, metrics.get(key).losses);

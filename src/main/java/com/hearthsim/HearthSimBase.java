@@ -60,6 +60,10 @@ public abstract class HearthSimBase {
         gameEndListeners_ = new ArrayList<>();
     }
 
+    HearthSimBase() {
+    	gameEndListeners_ = new ArrayList<>();
+    }
+
     /**
      * Run a single game.
      *
