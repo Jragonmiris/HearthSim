@@ -10,6 +10,7 @@ import com.hearthsim.io.ParamFile;
 import com.hearthsim.player.playercontroller.ArtificialPlayer;
 import com.hearthsim.player.playercontroller.BruteForceSearchAI;
 import com.hearthsim.results.GameResult;
+import com.hearthsim.results.GameSimpleRecord;
 import com.hearthsim.util.ThreadQueue;
 
 import java.io.*;
@@ -65,10 +66,9 @@ public class HearthSimArena extends HearthSimBase {
     }
 
     @Override
-    public GameResult runSingleGame(int gameId) throws IOException, HSException {
+    public GameResult runSingleGame(int gid) throws IOException, HSException {
         int p0;
         int p1;
-
         synchronized(available) {
             if (available.size() < 2) {
                 return null;
@@ -81,7 +81,6 @@ public class HearthSimArena extends HearthSimBase {
 
         Path path0 = FileSystems.getDefault().getPath(rootPath_.toString(), String.format("%s%d.hsdeck", deckListFilePath_, p0));
         Path path1 = FileSystems.getDefault().getPath(rootPath_.toString(), String.format("%s%d.hsdeck", deckListFilePath_, p1));
-
 
         DeckListFile deckList0 = new DeckListFile(path0);
         DeckListFile deckList1 = new DeckListFile(path1);
@@ -98,7 +97,15 @@ public class HearthSimArena extends HearthSimBase {
         ArtificialPlayer ai0 = new BruteForceSearchAI(aiPath0);
         ArtificialPlayer ai1 = new BruteForceSearchAI(aiPath1);
 
-        GameResult result =  super.runSingleGame(ai0, hero0, deck0, ai1, hero1, deck1, gameId % 2);
+        GameResult result;
+        try {
+           result =  super.runSingleGame(ai0, hero0, deck0, ai1, hero1, deck1, gid % 2);
+        } catch (Exception e) {
+            log.info("Exception was thrown in game, but it was caught");
+            ThreadLocalRandom rng = ThreadLocalRandom.current();
+            int winner = rng.nextInt(0,2);
+            result = new GameResult(gid % 2, winner, 0, new GameSimpleRecord());
+        }
 
         if (result.winnerPlayerIndex_ == 0) {
             metrics.get(p0).wins += 1;
@@ -121,7 +128,7 @@ public class HearthSimArena extends HearthSimBase {
             }
 
             if (available.size() >= 2) {
-                synchronized(gameID) {
+                synchronized(this.gameID) {
                     GameThread gThread = new GameThread(gameID, writer);
                     tQueue.queue(gThread);
                     gameID += 1;
@@ -154,7 +161,7 @@ public class HearthSimArena extends HearthSimBase {
         double secondsPerGame = simDeltaTimeSeconds / gameID;
         String prettySecondsPerGame = String.format("%.2f", secondsPerGame);
 
-        log.info("completed simulation of {} games in {} seconds on {} thread(s)", numSims_, prettyDeltaTimeSeconds, numThreads_);
+        log.info("completed simulation of {} games in {} seconds on {} thread(s)", gameID, prettyDeltaTimeSeconds, numThreads_);
         log.info("average time per game: {} seconds", prettySecondsPerGame);
 
         Path arenaPath = FileSystems.getDefault().getPath(rootPath_.toString(), arenaResultsPath_);
