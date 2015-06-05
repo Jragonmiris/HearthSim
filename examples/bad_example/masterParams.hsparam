@@ -1,0 +1,11 @@
+num_simulations           =   100
+num_threads               =   8
+
+output_file               =   example1.hsres
+arena_output  			  =	  arenares.txt
+
+deckListFilePath          =   deck
+
+aiParamFilePath           =   ai
+
+numDecks 				  =   2
